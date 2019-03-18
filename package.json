@@ -1,0 +1,21 @@
+{
+  "name": "tangle",
+  "version": "0.1.0",
+  "description": "a literate programming cli to generate code from markdown files",
+  "scripts": {},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/pangrr/tangle.git"
+  },
+  "bin": {
+    "tangle": "tangle.js"
+  },
+  "author": "Ran Pang",
+  "license": "ISC",
+  "dependencies": {
+    "yargs": "^13.2.2"
+  },
+  "devDependencies": {
+    "eslint": "^4.8.0"
+  }
+}
