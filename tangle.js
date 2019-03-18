@@ -1,4 +1,5 @@
 const fs = require('fs');
+const fsExtra = require('fs-extra');
 const os = require('os');
 
 const argv = require('yargs')
@@ -17,7 +18,7 @@ generateCodeFromMarkdown(mdFilePath);
 function generateCodeFromMarkdown(mdFilePath) {
   let codeLines = [];
   let codeFilePath = undefined;
-  
+
   fs.readFileSync(mdFilePath, 'utf8').split(os.EOL).forEach(line => {
     if (codeStart(line)) {
       codeFilePath = getCodeFilePath(line);
@@ -52,6 +53,7 @@ function getCodeFilePath(line) {
 
 function putCodeToFile(codeLines, codeFilePath) {
   if (codeLines.length > 0 && typeof codeFilePath === 'string') {
+    fsExtra.ensureFileSync(codeFilePath);
     fs.appendFileSync(codeFilePath, codeLines.join(os.EOL));
   }
 }
