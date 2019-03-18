@@ -2,4 +2,4 @@
 
 
 ## how to use
-`node tangle foo.md`
+`node tangle.js foo.md`
