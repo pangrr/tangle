@@ -17,22 +17,14 @@ function generateCodeFromMarkdown(mdFilePath: string): void {
   let codeBlock: CodeFile | CodeInsert | undefined;
 
   fs.readFileSync(mdFilePath, 'utf8').split(os.EOL).forEach((line: string) => {
-    if (codeStart(line)) {
-      codeBlock = createCodeBlock(line);
-    } else if (codeEnd(line)) {
+    if (codeStart(line)) codeBlock = createCodeBlock(line);
+    else if (codeEnd(line)) {
       if (codeBlock) {
-        if (isCodeInsert(codeBlock)) {
-          codeInserts.push(codeBlock);
-        } else {
-          codeFiles.push(codeBlock);
-        }
+        if (isCodeInsert(codeBlock)) codeInserts.push(codeBlock);
+        else codeFiles.push(codeBlock);
         codeBlock = undefined;
       }
-    } else {
-      if (codeBlock) {
-        codeBlock.codeLines.push(line);
-      }
-    }
+    } else if (codeBlock) codeBlock.codeLines.push(line);
   });
 
   const mergedCodeFiles: MergedCodeFiles = mergeCodeFiles(codeFiles);
@@ -46,9 +38,7 @@ function removeInsertLocations(mergedCodeFiles: MergedCodeFiles): void {
   Object.keys(mergedCodeFiles).forEach(filePath => {
     const cleanCodeLines: string[] = [];
     mergedCodeFiles[filePath].forEach(codeLine => {
-      if (codeLine.trim().indexOf('@') !== 0) {
-        cleanCodeLines.push(codeLine);
-      }
+      if (codeLine.trim().indexOf('@') !== 0) cleanCodeLines.push(codeLine);
     });
     mergedCodeFiles[filePath] = cleanCodeLines;
   });
@@ -68,9 +58,7 @@ function insertCode(mergedCodeFiles: MergedCodeFiles, codeInserts: CodeInsert[])
     }
     codeInsertsLeft.push(fromCodeFile);
   }
-  if (codeInsertsLeft.length < codeInserts.length) {
-    insertCode(mergedCodeFiles, codeInsertsLeft);
-  }
+  if (codeInsertsLeft.length < codeInserts.length) insertCode(mergedCodeFiles, codeInsertsLeft);
 }
 
 
@@ -82,9 +70,7 @@ function getInsertLocation(codeLines: string[], insertAt: string): number {
       return codeLines.length;
     default:
       for (let i = 0; i < codeLines.length; i++) {
-        if (codeLines[i].trim() === `@${insertAt}`) {
-          return i;
-        }
+        if (codeLines[i].trim() === `@${insertAt}`) return i;
       }
       return -1;
   }
@@ -94,9 +80,7 @@ function getInsertLocation(codeLines: string[], insertAt: string): number {
 function mergeCodeFiles(codeFiles: CodeFile[]): MergedCodeFiles {
   const mergedCodeFiles: MergedCodeFiles = {};
   codeFiles.forEach(codeFile => {
-    if (!mergedCodeFiles[codeFile.filePath]) {
-      mergedCodeFiles[codeFile.filePath] = [];
-    }
+    if (!mergedCodeFiles[codeFile.filePath]) mergedCodeFiles[codeFile.filePath] = [];
     mergedCodeFiles[codeFile.filePath].push(...codeFile.codeLines);
   });
   return mergedCodeFiles;
@@ -126,15 +110,12 @@ function createCodeBlock(line: string): CodeFile | CodeInsert | undefined {
   const filePath = lineTokens[1];
   const insertAt = lineTokens[2];
 
-  if (!filePath) {
-    return undefined;
-  } else {
-    return {
-      filePath,
-      insertAt,
-      codeLines: []
-    };
-  }
+  if (!filePath) return undefined;
+  return {
+    filePath,
+    insertAt,
+    codeLines: []
+  };
 }
 
 
