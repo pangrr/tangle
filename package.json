@@ -1,5 +1,5 @@
 {
-  "name": "tangle",
+  "name": "@pangrr/tangle",
   "version": "0.1.0",
   "description": "a literate programming cli to generate code from markdown files",
   "scripts": {

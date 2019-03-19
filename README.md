@@ -2,4 +2,5 @@
 
 
 ## how to use
-`node tangle.js foo.md`
+`npm install -g @pangrr/tangle`
+`tangle --help`
