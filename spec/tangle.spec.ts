@@ -20,7 +20,7 @@ describe('tangle', () => {
     });
 
     fs.readdirSync(path.join('spec', 'expectedCodeFiles')).forEach(fileName => {
-      expect(sameFileContent(path.join('spec', 'expectedCodeFiles', `${fileName}`), path.join(tmpDir, `${fileName}`))).to.be.true;
+      expect(sameFileContent(path.join('spec', 'expectedCodeFiles', `${fileName}`), path.join(tmpDir, `${fileName}`)), `${fileName}`).to.be.true;
     })
   });
 });
