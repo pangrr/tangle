@@ -1,6 +1,7 @@
 # a literate programming tool to generate code from markdown files
 
 
-## how to use
+## install
 `npm install -g @pangrr/tangle`
+## usage
 `tangle --help`
