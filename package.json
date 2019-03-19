@@ -6,7 +6,7 @@
     "build": "tsc --outDir bin",
     "test": "npm run build && mocha -r ts-node/register spec/**/*.spec.ts"
   },
-  "keyWords": ["literate programming", "markdown", "js", "javascript", "node", "nodejs", "typescript"],
+  "keywords": ["literate programming", "markdown", "js", "javascript", "node", "nodejs", "typescript"],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/pangrr/tangle.git"
