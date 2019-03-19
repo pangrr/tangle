@@ -4,7 +4,7 @@ import * as fsExtra from 'fs-extra';
 import * as os from 'os';
 import * as yargs from 'yargs';
 
-yargs.demandCommand(1).usage('Usage: $0 [markdown-file-path]');
+yargs.demandCommand(1).usage('Usage: $0 [markdown_file_path]');
 generateCodeFromMarkdown(yargs.argv._[0]);
 
 

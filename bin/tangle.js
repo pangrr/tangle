@@ -5,7 +5,7 @@ const fs = require("fs");
 const fsExtra = require("fs-extra");
 const os = require("os");
 const yargs = require("yargs");
-yargs.demandCommand(1).usage('Usage: $0 [markdown-file-path]');
+yargs.usage('Usage: $0 [markdown_file_path]');
 generateCodeFromMarkdown(yargs.argv._[0]);
 function generateCodeFromMarkdown(mdFilePath) {
     const codeFiles = [];
