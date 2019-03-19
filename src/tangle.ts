@@ -1,17 +1,22 @@
 #!/usr/bin/env node
 import * as fs from 'fs';
-import * as fsExtra from 'fs-extra';
+import * as fsx from 'fs-extra';
 import * as os from 'os';
+import * as path from 'path';
 import * as yargs from 'yargs';
 
-yargs.demandCommand(1).usage('Usage: $0 [markdown_file_path]');
-generateCodeFromMarkdown(yargs.argv._[0]);
+const argv = yargs
+  .demandCommand(1)
+  .usage('Usage: $0 [markdown_file_path] -d [save_dir]')
+  .default('d', '.')
+  .argv;
+generateCodeFromMarkdown(argv._[0], <string>argv.d);
 
 
 
 
 
-function generateCodeFromMarkdown(mdFilePath: string): void {
+function generateCodeFromMarkdown(mdFilePath: string, saveDir: string): void {
   const codeFiles: CodeFile[] = [];
   const codeInserts: CodeInsert[] = [];
   let codeBlock: CodeFile | CodeInsert | undefined;
@@ -30,7 +35,7 @@ function generateCodeFromMarkdown(mdFilePath: string): void {
   const mergedCodeFiles: MergedCodeFiles = mergeCodeFiles(codeFiles);
   insertCode(mergedCodeFiles, codeInserts);
   removeInsertLocations(mergedCodeFiles);
-  writeCodeFiles(mergedCodeFiles);
+  writeCodeFiles(mergedCodeFiles, saveDir);
 }
 
 
@@ -87,10 +92,11 @@ function mergeCodeFiles(codeFiles: CodeFile[]): MergedCodeFiles {
 }
 
 
-function writeCodeFiles(mergedCodeFiles: MergedCodeFiles): void {
-  Object.keys(mergedCodeFiles).forEach(filePath => {
-    fsExtra.ensureFileSync(filePath);
-    fs.writeFileSync(filePath, mergedCodeFiles[filePath].join(os.EOL));
+function writeCodeFiles(mergedCodeFiles: MergedCodeFiles, saveDir: string): void {
+  Object.keys(mergedCodeFiles).forEach(relativeFilePath => {
+    const absoluteFilePath = path.join(saveDir, relativeFilePath);
+    fsx.ensureFileSync(absoluteFilePath);
+    fs.writeFileSync(absoluteFilePath, mergedCodeFiles[relativeFilePath].join(os.EOL));
   });
 }
 

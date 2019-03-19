@@ -3,7 +3,8 @@
   "version": "0.1.0",
   "description": "a literate programming cli to generate code from markdown files",
   "scripts": {
-    "build": "tsc --outDir bin"
+    "build": "tsc --outDir bin",
+    "test": "npm run build && mocha -r ts-node/register spec/**/*.spec.ts"
   },
   "repository": {
     "type": "git",
@@ -19,9 +20,16 @@
     "yargs": "^13.2.2"
   },
   "devDependencies": {
+    "@types/chai": "^4.1.7",
     "@types/fs-extra": "^5.0.5",
-    "@types/yargs": "^12.0.10",
+    "@types/mocha": "^5.2.6",
     "@types/node": "^11.11.3",
+    "@types/shelljs": "^0.8.3",
+    "@types/yargs": "^12.0.10",
+    "chai": "^4.2.0",
+    "mocha": "^6.0.2",
+    "shelljs": "^0.8.3",
+    "ts-node": "^8.0.3",
     "tslint": "^5.14.0",
     "typescript": "^3.3.3333"
   }
