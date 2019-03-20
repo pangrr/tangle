@@ -1,7 +1,6 @@
 #!/usr/bin/env node
 import * as fs from 'fs';
 import * as fsx from 'fs-extra';
-import * as os from 'os';
 import * as path from 'path';
 import * as yargs from 'yargs';
 
@@ -10,139 +9,163 @@ const argv = yargs
   .usage('Usage: $0 [markdown_file_path] -d [save_dir]')
   .default('d', '.')
   .argv;
-generateCodeFromMarkdown(argv._[0], <string>argv.d);
+md2code(argv._[0], <string>argv.d);
 
 
 
-
-
-function generateCodeFromMarkdown(mdFilePath: string, saveDir: string): void {
-  const codeFiles: CodeFile[] = [];
-  const codeInserts: CodeInsert[] = [];
-  let codeBlock: CodeFile | CodeInsert | undefined;
-
-  fs.readFileSync(mdFilePath, 'utf8').split(os.EOL).forEach((line: string) => {
-    if (codeStart(line)) codeBlock = createCodeBlock(line);
-    else if (codeEnd(line)) {
-      if (codeBlock) {
-        if (isCodeInsert(codeBlock)) codeInserts.push(codeBlock);
-        else codeFiles.push(codeBlock);
-        codeBlock = undefined;
-      }
-    } else if (codeBlock) codeBlock.codeLines.push(line);
-  });
-
-  const mergedCodeFiles: MergedCodeFiles = mergeCodeFiles(codeFiles);
-  insertCode(mergedCodeFiles, codeInserts);
-  removeInsertLocations(mergedCodeFiles);
-  writeCodeFiles(mergedCodeFiles, saveDir);
+function md2code(mdFilePath: string, saveDir: string): void {
+  const mdContent = readFileAndUnifyNewLine(mdFilePath);
+  const baseCodeBlocks: BaseCodeBlock[] = extractBaseCodeBlocks(mdContent);
+  const insertionCodeBlocks: InsertionCodeBlock[] = extractInsertionCodeBlocks(mdContent);
+  const reducedBaseCodeBlocks: BaseCodeBlock[] = reduceBaseCodeBlocks(baseCodeBlocks);
+  const reducedInsertionCodeBlocks: InsertionCodeBlock[] = reduceInsertionCodeBlocks(insertionCodeBlocks);
+  const reducedCodeBlocks: BaseCodeBlock[] = reduceCodeBlocks(reducedBaseCodeBlocks, reducedInsertionCodeBlocks);
+  dumpCodeBlocks(reducedCodeBlocks, saveDir);
 }
 
 
-function removeInsertLocations(mergedCodeFiles: MergedCodeFiles): void {
-  Object.keys(mergedCodeFiles).forEach(filePath => {
-    const cleanCodeLines: string[] = [];
-    mergedCodeFiles[filePath].forEach(codeLine => {
-      if (codeLine.trim().indexOf('@') !== 0) cleanCodeLines.push(codeLine);
-    });
-    mergedCodeFiles[filePath] = cleanCodeLines;
-  });
+function extractInsertionCodeBlocks(text: string): InsertionCodeBlock[] {
+  return (text.match(/\n```\S* +\S+ +\S+\n[\s\S]*?\n```\n/g) || []).map(str => parseInsertCodeBlock(str));
 }
 
 
-function insertCode(mergedCodeFiles: MergedCodeFiles, codeInserts: CodeInsert[]): void {
-  const codeInsertsLeft: CodeInsert[] = [];
-  for (let fromCodeFile of codeInserts) {
-    const toCodeLines = mergedCodeFiles[fromCodeFile.filePath];
-    if (toCodeLines) {
-      const insertLocation = getInsertLocation(toCodeLines, fromCodeFile.insertAt);
-      if (insertLocation >= 0) {
-        toCodeLines.splice(insertLocation, 0, ...fromCodeFile.codeLines);
-        continue;
-      }
+function extractBaseCodeBlocks(text: string): BaseCodeBlock[] {
+  return (text.match(/\n```\S* +\S+\n[\s\S]*?\n```\n/g) || []).map(str => parseBaseCodeBlock(str));
+}
+
+
+function readFileAndUnifyNewLine(filePath: string): string {
+  return fs.readFileSync(filePath, 'utf8').replace('\r\n', '\n');
+}
+
+
+function reduceCodeBlocks(baseCodeBlocks: BaseCodeBlock[], insertionCodeBlocks: InsertionCodeBlock[]): BaseCodeBlock[] {
+  insertionCodeBlocks.forEach(insertionCodeBlock => {
+    const sameFilePathBaseCodeBlock = getSameFilePathCodeBlock<BaseCodeBlock>(baseCodeBlocks, insertionCodeBlock);
+    if (sameFilePathBaseCodeBlock) insertCodeBlock(insertionCodeBlock, sameFilePathBaseCodeBlock);
+  });
+  return baseCodeBlocks;
+}
+
+
+function reduceInsertionCodeBlocks(insertionCodeBlocks: InsertionCodeBlock[]): InsertionCodeBlock[] {
+  return insertionCodeBlocks.reduce(
+    (diffFilePathCodeBlocks: InsertionCodeBlock[], codeBlock) => {
+      const sameFilePathAndInsertLocationCodeBlock = getSameFilePathInsertLocationCodeBlock(diffFilePathCodeBlocks, codeBlock);
+      if (!sameFilePathAndInsertLocationCodeBlock) diffFilePathCodeBlocks.push(codeBlock);
+      else sameFilePathAndInsertLocationCodeBlock.code = sameFilePathAndInsertLocationCodeBlock.code + codeBlock.code;
+      return diffFilePathCodeBlocks;
+    },
+    []
+  ).reduce(
+    (noDepCodeBlocks: InsertionCodeBlock[], codeBlock, i, allCodeBlocks) => {
+      const insertToCodeBlock = getInsertToCodeBlock<InsertionCodeBlock>(allCodeBlocks, codeBlock);
+      if (!insertToCodeBlock) noDepCodeBlocks.push(codeBlock);
+      else insertCodeBlock(codeBlock, insertToCodeBlock);
+      return noDepCodeBlocks;
+    },
+    []
+  );
+}
+
+
+function getInsertToCodeBlock<T extends CodeBlock>(codeBlocks: T[], fromCodeBlock: InsertionCodeBlock): T | undefined {
+  for (let codeBlock of codeBlocks) {
+    if (codeBlock.code.includes(fromCodeBlock.insertLocation)) {
+      return codeBlock;
     }
-    codeInsertsLeft.push(fromCodeFile);
   }
-  if (codeInsertsLeft.length < codeInserts.length) insertCode(mergedCodeFiles, codeInsertsLeft);
+  return undefined;
 }
 
 
-function getInsertLocation(codeLines: string[], insertAt: string): number {
-  switch (insertAt) {
-    case 'top':
-      return 0;
-    case 'bottom':
-      return codeLines.length;
-    default:
-      for (let i = 0; i < codeLines.length; i++) {
-        if (codeLines[i].trim() === `@${insertAt}`) return i;
-      }
-      return -1;
+function insertCodeBlock(fromCodeBlock: InsertionCodeBlock, toCodeBlock: CodeBlock): void {
+  toCodeBlock.code = toCodeBlock.code.replace(fromCodeBlock.insertLocation, fromCodeBlock.code);
+}
+
+
+function reduceBaseCodeBlocks(baseCodeBlocks: BaseCodeBlock[]): BaseCodeBlock[] {
+  return baseCodeBlocks.reduce(
+    (diffFilePathCodeBlocks: BaseCodeBlock[], codeBlock) => {
+      const sameFilePathCodeBlock = getSameFilePathCodeBlock<BaseCodeBlock>(diffFilePathCodeBlocks, codeBlock);
+      if (!sameFilePathCodeBlock) diffFilePathCodeBlocks.push(codeBlock);
+      else sameFilePathCodeBlock.code = sameFilePathCodeBlock.code + codeBlock.code;
+      return diffFilePathCodeBlocks;
+    },
+    []
+  );  
+}
+
+
+function getSameFilePathCodeBlock<T extends CodeBlock>(codeBlocks: T[], codeBlock: CodeBlock): T | undefined {
+  for (let _codeBlock of codeBlocks) {
+    if (_codeBlock.filePath === codeBlock.filePath) return _codeBlock;
   }
+  return undefined;
 }
 
 
-function mergeCodeFiles(codeFiles: CodeFile[]): MergedCodeFiles {
-  const mergedCodeFiles: MergedCodeFiles = {};
-  codeFiles.forEach(codeFile => {
-    if (!mergedCodeFiles[codeFile.filePath]) mergedCodeFiles[codeFile.filePath] = [];
-    mergedCodeFiles[codeFile.filePath].push(...codeFile.codeLines);
-  });
-  return mergedCodeFiles;
+function getSameFilePathInsertLocationCodeBlock(codeBlocks: InsertionCodeBlock[], codeBlock: InsertionCodeBlock): InsertionCodeBlock | undefined {
+  for (let _codeBlock of codeBlocks) {
+    if (_codeBlock.filePath === codeBlock.filePath && _codeBlock.insertLocation === codeBlock.insertLocation) return _codeBlock;
+  }
+  return undefined;
 }
 
 
-function writeCodeFiles(mergedCodeFiles: MergedCodeFiles, saveDir: string): void {
-  Object.keys(mergedCodeFiles).forEach(relativeFilePath => {
-    const absoluteFilePath = path.join(saveDir, relativeFilePath);
-    fsx.ensureFileSync(absoluteFilePath);
-    fs.writeFileSync(absoluteFilePath, mergedCodeFiles[relativeFilePath].join(os.EOL));
-  });
-}
-
-
-function codeStart(line: string): boolean {
-  return line.indexOf('```') === 0 && line.split(' ').length > 1;
-}
-
-
-function codeEnd(line: string): boolean {
-  return line === '```';
-}
-
-
-function createCodeBlock(line: string): CodeFile | CodeInsert | undefined {
-  const lineTokens = line.split(' ');
-  const filePath = lineTokens[1];
-  const insertAt = lineTokens[2];
-
-  if (!filePath) return undefined;
+function parseBaseCodeBlock(codeBlock: string): BaseCodeBlock {
   return {
-    filePath,
-    insertAt,
-    codeLines: []
+    filePath: getFilePathFromCodeBlock(codeBlock),
+    code: getCodeFromCodeBlock(codeBlock)
   };
 }
 
 
-interface CodeFile {
-  readonly filePath: string;
-  readonly codeLines: string[];
+function parseInsertCodeBlock(codeBlock: string): InsertionCodeBlock {
+  return {
+    filePath: getFilePathFromCodeBlock(codeBlock),
+    insertLocation: getInsertLocationFromCodeBlock(codeBlock),
+    code: getCodeFromCodeBlock(codeBlock)
+  };
 }
 
 
-interface CodeInsert {
-  readonly filePath: string;
-  readonly insertAt: string;
-  readonly codeLines: string[];
+function getFilePathFromCodeBlock(codeBlock: string): string {
+  return codeBlock.split('\n')[1].split(' ')[1];
 }
 
 
-interface MergedCodeFiles {
-  [key: string]: string[];
+function getInsertLocationFromCodeBlock(codeBlock: string): string {
+  return codeBlock.split('\n')[1].split(' ')[2];
 }
 
 
-function isCodeInsert(codeBlock: CodeFile | CodeInsert): codeBlock is CodeInsert {
-  return (<CodeInsert>codeBlock).insertAt !== undefined;
+function getCodeFromCodeBlock(codeBlock: string): string {
+  const lines = codeBlock.split('\n');
+  return lines.filter((line, i) => i > 1 && i < lines.length - 2).join('\n') + '\n';
 }
+
+
+function dumpCodeBlocks(codeBlocks: BaseCodeBlock[], saveDir: string): void {
+  codeBlocks.forEach(codeBlock => {
+    const absoluteFilePath = path.join(saveDir, codeBlock.filePath);
+    fsx.ensureFileSync(absoluteFilePath);
+    fs.writeFileSync(absoluteFilePath, codeBlock.code);
+  });
+}
+
+
+interface BaseCodeBlock {
+  filePath: string;
+  code: string;
+}
+
+
+interface InsertionCodeBlock {
+  filePath: string;
+  insertLocation: string;
+  code: string;
+}
+
+
+type CodeBlock = BaseCodeBlock | InsertionCodeBlock;

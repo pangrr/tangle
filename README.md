@@ -5,3 +5,5 @@
 `npm install -g @pangrr/tangle`
 ## usage
 `tangle --help`
+## examples
+See `spec/sampleMarkdownFiles` and `spec/expectedCodeFiles`.

@@ -9,13 +9,13 @@
 
 # how to store a person's words familiarity
 Each word has a value of familiarity. Familiarity can be either `unfamiliar = false` or `familiar = true`. An json object is to store a person's words familiarity. Words not in the object are by default `familiar`.
-```js demo.html script
+```js demo.html @script
 const wordsFamiliarity = {};
 ```
 
 # which words should show hint
 Show hint for `unfamiliar` words.
-```js demo.html script
+```js demo.html @script
 function shouldShowHint(wordsFamiliarity, word) {
   return wordsFamilarity[words] === false;
 }
@@ -23,7 +23,7 @@ function shouldShowHint(wordsFamiliarity, word) {
 
 # how to update words familiarity
 Mark words been looked up as `unfamiliar`. Mark other words as `familiar`.
-```js demo.html script
+```js demo.html @script
 function lookedUp(wordsFamiliarity, word) {
   wordsFamiliarity[word] = false;
 }
