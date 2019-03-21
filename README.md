@@ -37,5 +37,4 @@ module.exports = () => {
 ## examples
 See `spec/sampleMarkdownFiles` and `spec/expectedCodeFiles`.
 
-## caveats
-- each code block should be followed by an empty new line
+
