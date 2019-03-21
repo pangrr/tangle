@@ -35,7 +35,7 @@ function extractBaseCodeBlocks(text: string): BaseCodeBlock[] {
 
 
 function readFileAndPreProcess(filePath: string): string {
-  return fs.readFileSync(filePath, 'utf8').replace('\r\n', '\n').replace('```\n', '```\n\n');
+  return fs.readFileSync(filePath, 'utf8').replace(/\r\n/g, '\n').replace(/```\n/g, '```\n\n');
 }
 
 
