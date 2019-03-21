@@ -14,7 +14,7 @@ md2code(argv._[0], <string>argv.d);
 
 
 function md2code(mdFilePath: string, saveDir: string): void {
-  const mdContent = readFileAndUnifyNewLine(mdFilePath);
+  const mdContent = readFileAndPreProcess(mdFilePath);
   const baseCodeBlocks: BaseCodeBlock[] = extractBaseCodeBlocks(mdContent);
   const insertionCodeBlocks: InsertionCodeBlock[] = extractInsertionCodeBlocks(mdContent);
   const reducedBaseCodeBlocks: BaseCodeBlock[] = reduceBaseCodeBlocks(baseCodeBlocks);
@@ -25,17 +25,17 @@ function md2code(mdFilePath: string, saveDir: string): void {
 
 
 function extractInsertionCodeBlocks(text: string): InsertionCodeBlock[] {
-  return (text.match(/\n```\S* +\S+ +\S+\n[\s\S]*?\n```\n/g) || []).map(str => parseInsertCodeBlock(str));
+  return (text.match(/\n```\S* \S+ \S+\n[\s\S]*?\n```\n/g) || []).map(str => parseInsertCodeBlock(str));
 }
 
 
 function extractBaseCodeBlocks(text: string): BaseCodeBlock[] {
-  return (text.match(/\n```\S* +\S+\n[\s\S]*?\n```\n/g) || []).map(str => parseBaseCodeBlock(str));
+  return (text.match(/\n```\S* \S+\n[\s\S]*?\n```\n/g) || []).map(str => parseBaseCodeBlock(str));
 }
 
 
-function readFileAndUnifyNewLine(filePath: string): string {
-  return fs.readFileSync(filePath, 'utf8').replace('\r\n', '\n');
+function readFileAndPreProcess(filePath: string): string {
+  return fs.readFileSync(filePath, 'utf8').replace('\r\n', '\n').replace('```\n', '```\n\n');
 }
 
 
