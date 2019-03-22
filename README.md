@@ -1,8 +1,8 @@
 `tangle` is a literate programming tool to generate code from markdown files.
 
-**Free our mind writers.** We should express our ideas. Don't worry about how to structure code and files to express our design. Express our design in our most natural way. Mind programming language later. We don't have to follow the order of programming languages or frameworks. Code can be scattered around.
+**Free our mind writers.** We should express our ideas. Don't worry about how to structure code and files to express our design. Express our design in our most natural way. Start with the most important.
 
-**No fear readers.** We don't have to understand the programming language nor the framework to get the big picture of a program written by someone else. We don't have to remember the requirement and features of the program you wrote long time ago.
+**No fear readers.** We don't have to understand the programming language nor the framework to get the big picture of a program written by someone else. We can get straight into the most important thing of the program.
 
 # How to tangle?
 Install nodejs then `npm install -g @pangrr/tangle`.
@@ -41,40 +41,75 @@ module.exports = () => {
 - I feel encouraged or natural to create functions at the beginning, in stead of writing procedural code then breaking them into functions.
 - Doesn't the rendered markdown file look like those tutorials online?
 - I don't have to rush into coding. Just design makes me feel comfortable. And I complete the most important job without coding. Kind of laguange free!
+- Focus and start with the most important staff, or I will ends up with a messy markdown.
+- Don't start coding until you feel the design is complete. Or you will ends up struggling managing both code and design.
 
 
 # Literate Programming Tangle
+At the core we need to extract code from markdown string then orgranize the code.
+## Extract Code
+
+
+## Organize Code
+
+
+## less important things
+- Read file and give string to extract code.
+- Dump organized code into files.
+- Provide cli.
+
+
+
+
+
 1. Read a markdown file into a string.
 ```ts
 function readFile(filePath: string): string {
-
+  return fs.readFileSync(filePath, 'utf8');
 }
 ```
-2. Validate and preprocess the string.
+2. Preprocess the string.
+```ts
+function preprocessMarkdown(rawMarkdown: string): string {
+  return appendNewLineAfterCodeBlock(unifyNewLineChar(rawMarkdown));
+}
+```
+3. Validate the string.
 ```ts
 function validateMarkdown(preprocessedMarkdown: string): void {
-
-}
-function preprocessMarkdown(rawMarkdown: string): string {
-
+  shouldNotStartWithCodeBlock(preprocessedMarkdown);
 }
 ```
-3. Extract code from the string.
+4. Extract code from the string.
 ```ts
-function extractCodeBlocks(preprocessedMarkdown: string): string {
+function extractCodeBlocks(preprocessedMarkdown: string): CodeBlocks {
+  return {
+    base: extractBaseCodeBlocks(preprocessedMarkdown),
+    insertion: extractInsertionCodeBlocks(preprocessedMarkdown)
+  };
+}
+function extractBaseCodeBlocks(preprocessedMarkdown: string): BaseCodeBlock[] {
+  return (text.match(/\n```\S* \S+\n[\s\S]*?\n```\n/g) || []).map(str => parseBaseCodeBlock(str));
+
+}
+function extractInsertionCodeBlocks(preprocessedMarkdown: string): InsertionCodeBlock[ ] {
 
 }
 ```
-4. Merge code.
+5. Merge code.
 ```ts
 function mergeCodeBlocks(codeBlocks: CodeBlocks): BaseCodeBlock[] {
 
 }
 ```
-5. Dump code into files.
+6. Dump code into files.
 ```ts
 function dumpCodeBlocks(baseCodeBlocks: BaseCodeBlock[]): void {
-
+  codeBlocks.forEach(codeBlock => {
+    const absoluteFilePath = path.join(saveDir, codeBlock.filePath);
+    fsx.ensureFileSync(absoluteFilePath);
+    fs.writeFileSync(absoluteFilePath, codeBlock.code);
+  });
 }
 ```
 ```ts
@@ -93,28 +128,21 @@ A code block should have a mark about where it should be put into.
 - For insertion code block let's use ` ```js foo.js pointA`. Then put `pointA` in another code block.
 
 ## How to extract code blocks from markdown file?
-```ts
-function extractBaseCodeBlocksFromText(text: string): BaseCodeBlock[] {
-  return text.match(/\n[ \t]*```\S*[ \t]+\S+[ \t]*\n[\s\S]*?\n[ \t]*```[ \t]*\n/g) || [];
-}
-function extractInsertionCodeBlocksFromText(text: string): InsertionCodeBlock[] {
-  return text.match(/\n[ \t]*```\S*[ \t]+\S+[ \t]+\S+[ \t]*\n[\s\S]*?\n[ \t]*```[ \t]*\n/g) || [];
-}
-```
-**Note** regular expressions above have limitations:
+
+**Note** these regular expressions have limitations:
 - Only support new line character `\n`. So we need preprocess the text before extraction.
 ```ts
 function unifyNewLineChar(text: string): string {
   return text.replace(/\n\r/g, '\n');
 }
 ```         
-- A code block cannot be immediately below another code block. Need another preprocess.
+- A code block immediately after another code block will be ignored. Need another preprocess.
 ```ts
 function appendNewLineAfterCodeBlock(text: string): string {
   return text.replace(/\n```\n/g, '\n```\n\n');
 }
 ```
-- A code block starting from the first line will be ignored. Since this is not a common situation, let's use validation.
+- A code block starting from the first line will be ignored. Since this is not a common situation, let's guard against it with validation.
 ```ts
 function shouldNotStartWithCodeBlock(text: string): void {
   const firstLine = text.split('\n')[0];
