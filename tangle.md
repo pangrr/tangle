@@ -2,58 +2,86 @@ Basically we extract code from markdown and organize the code into files.
 
 
 # Define Code
-We want code presented in markdown as block code. Code location can be appended to the start line of a block code like ` ``` <filePath> <insertPoint>`. 
+Let's use block code and not use inline code because we can add more information on block code marks and not in inline code.
 
-Note that `<insertPoint>` can be optional because some kind of code, like functions, can be put almost any where in a file. Why bother assign a location? 
+Code location can be appended to the start line of a block code like ` ``` <filePath> <insertPoint>`. Note that `<insertPoint>` can be optional because some kind of code, like functions, can be put almost any where in a file. Why bother assign a location? 
 
 Thus comes 2 types of code:
 1. base code, starting with ` ``` <filePath>`, matched by 
-``` @baseCodeRegex
-/\n[ \t]*```\S*[ \t]+\S+[ \t]*\n[\s\S]*?\n[ \t]*```[ \t]*\n/g
+```ts
+function extractBaseCode(text: string): string[] {
+  return text.match(/\n[ \t]*```\S*[ \t]+\S+[ \t]*\n[\s\S]*?\n[ \t]*```[ \t]*\n/g) || [];
+}
 ```
-2. insertion code, starting with ` ``` <filePath> <insertPoint>`, matched by 
-``` @insertionCodeRegex
-/\n[ \t]*```\S*[ \t]+\S+[ \t]+\S+[ \t]*\n[\s\S]*?\n[ \t]*```[ \t]*\n/g
+2. insert code, starting with ` ``` <filePath> <insertPoint>`, matched by 
+```ts
+function extractInsertCode(text: string): string[] {
+  return text.match(/\n[ \t]*```\S*[ \t]+\S+[ \t]+\S+[ \t]*\n[\s\S]*?\n[ \t]*```[ \t]*\n/g) || [];
+}
 ```
 
-A piece of code defined above includes 2 or 3 types of information: the code itself, the file path, and maybe the insert location. Let's store the code in a data structure.
+A piece of code defined above includes 2 or 3 types of information: the code itself, the file path, and maybe the insert point. Let's store the code in a data structure.
 ```ts
 interface Code {
   code: string;
   filePath: string;
-  insertLocation?: string;
+  insertPoint?: string;
 }
 function parseBlockCodeString(blockCodeString: string): Code {
-  
+  const lines = blockCodeString.split('\n');
+  const firstLinetTokens = lines[0].replace(/[ \t]+/g, ' ').split(' ');
+  return {
+    code: lines.filter((line, i) => i > 1 && i < lines.length - 2).join('\n') + '\n',
+    filePath: firstLinetTokens[1],
+    insertPoint: firstLineTokens[2]
+  };
 }
 ```
 
 # Organize Code Into Files
-- Concate base code with identical `<filePath>`.
+Let's group code into base code and insert code for the convenience of handling them separately first.
 ```ts
-interface Location2Code { [location: string]: string; }
-function reduceBaseCode(baseCode: Code[]): Location2Code {
-  const filePath2Code: Location2Code = {};
-  baseCode.forEach(code => {
-    if (!filePath2Code[code.filePath]) filePath2Code[code.filePath] = code.code;
-    else filePath2Code[code.filePath] = filePath2Code[code.filePath] + code.code;
+const baseCode = extractBaseCode(mdTxt).map(str => parseBlockCodeString(str));
+const insertCode = extractInsertCode(mdTxt).map(str => parseBlockCodeString(str));
+```
+1. Concate base code with identical `<filePath>`.
+```ts
+interface FilePath2Code { [filePath: string]: string; }
+function mergeCodeWithSameFilePath(baseCode: Code[]): FilePath2Code {
+  const map: FilePath2Code = {};
+  baseCode.forEach(codeObj => {
+    const filePath = code.filePath;
+    const code = codeObj.code;
+    if (!map[filePath]) map[filePath] = code;
+    else map[filePath] = map[filePath] + code;
   });
-  return filePath2Code;
+  return map;
 }
 ```
-- Concate insertion code with identical `<filePath> <insertPosition>`.
+2. Concate insert code with identical `<filePath> <insertPosition>`.
 ```ts
-function reduceInsertionCode(insertionCode: Code[]): Location2Code {
-  const location2Code: Location2Code = {};
-  insertionCode.forEach(code => {
-    if (!location2Code[code.filePath]) location2Code[code.filePath] = code.code;
-    else location2Code[code.filePath] = location2Code[code.filePath] + code.code;
+interface FilePathInsertPoint2Code {
+  [filePath: string]: {
+    [insertPoint: string]: string;
+  }
+}
+function mergeCodeWithSameFilePathInsertPoint(insertCode: Code[]): FilePathInsertPoint2Code {
+  const map: FilePathInsertPoint2Code = {};
+  insertCode.forEach(codeObj => {
+    const filePath = code.filePath;
+    const code = codeObj.code;
+    if (!map[code.filePath]) map[filePathInsertPoint] = code.code;
+    else map[filePathInsertPoint] = map[filePathInsertPoint] + code.code;
   });
-  return location2Code;
+  return map;
 }
 ```
-- Insert code.
+- Insert code among inserts code.
+```ts
 
+```
+
+- Insert code from insert code into base code.
 
 
 
