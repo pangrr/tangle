@@ -14,14 +14,14 @@ describe('tangle', () => {
     fsx.removeSync(outputDir);
   });
 
-  it('should generate a file with identical content as aHtml/demo.html', () => {
-    fs.readdirSync(path.join('examples', 'aHtml')).forEach(fileName => {
-      
-    });
-
+  it('should generate a file with identical content as aHtml/demo.html from aHtml/demo.md', () => {
     shx.exec(`node bin/tangle.js examples/aHtml/demo.md -d ${outputDir}`);
-
     expect(sameFileContent(path.join('examples', 'aHtml', 'demo.html'), path.join(outputDir, 'demo.html'))).to.be.true;
+  });
+
+  it('should generate a file with identical content as tangle/tangle.ts from tangle/tangle.md', () => {
+    shx.exec(`node bin/tangle.js examples/tangle/tangle.md -d ${outputDir}`);
+    expect(sameFileContent(path.join('examples', 'tangle', 'tangle.ts'), path.join(outputDir, 'tangle.ts'))).to.be.true;
   });
 });
 
