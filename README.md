@@ -56,4 +56,6 @@ module.exports = () => {
 # Afterwords
 This is inspired by literate programming and those online tutoial posts. But the goal is to improve experiece reading and writing programs (at least some species). So I don't strictly follow any classic literate programming decipline.
 
+This project in under active experimentation against different programs.
+
 If you are also interetest, it would be very helpful to drop a issue here.
