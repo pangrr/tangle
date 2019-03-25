@@ -10,6 +10,8 @@ tangle <markdown_file_path> -d <save_code_directory>
 ```
 tangle --help
 ```
+
+# Examples
 `tangle` can turn the following markdown file
 
         My program will say hello world to you!
@@ -31,7 +33,7 @@ module.exports = () => {
 }
 ```
 
-Check out another example: [`src/tangle.ts`]() is generated from [`src/tangle.md`]().
+**Check out another example**: [`src/tangle.ts`](https://github.com/pangrr/tangle/blob/master/src/tangle.ts) is generated from [`src/tangle.md`](https://github.com/pangrr/tangle/blob/master/src/tangle.md).
 
 
 
