@@ -1,7 +1,25 @@
-Prgramming in markdown like creating a tutorial, for yourself and for others. `tangle` is a tool to generate code from markdown files.
+Do you enjoy those online tutorial posts?
+
+Do you want your program to also look like a tutorial?
+
+You can program in markdown with code inside and use `tangle` to extract code from markdown files.
+
+To get started creating your tutorial like program:
+1. Think and write about key points.
+    - Don't mind the completeness of your program.
+    - Don't mind route works or boilerplates.
+    - Usually you feel good to add some code (possibly as functions) to each of the core parts.
+    - Don't mind where to put the code into code files.
+    - After this process, you should feel 'That's mostly it!' and feel safe to take a break.
+2. Think about appendix.
+    - Exception handling.
+    - Boring routes.
+    - Boilerplates.
+3. Mind where to put the code.
+
 
 # How to tangle?
-Install nodejs then `npm install -g @pangrr/tangle`.
+Install NodeJS then `npm install -g @pangrr/tangle`.
 
 Useage:
 ```
@@ -12,6 +30,8 @@ tangle --help
 ```
 
 # Examples
+[More examples!](examples)
+
 [src/tangle.ts](src/tangle.ts) is generated from [src/tangle.md](src/tangle.md). But basically, `tangle` can turn the following markdown file
 
         My program will say hello world to you!
@@ -33,16 +53,5 @@ module.exports = () => {
 }
 ```
 
-[More examples!](examples)
-
-# Tips
-
-
-# Thoughts about literate programming
-# My Experiences in Literate Programming
-- Don't worry about which file to put which code at the beginning. Assign files after finishing all design.
-- I feel encouraged or natural to create functions at the beginning, in stead of writing procedural code then breaking them into functions.
-- Doesn't the rendered markdown file look like those tutorials online?
-- I don't have to rush into coding. Just design makes me feel comfortable. And I complete the most important job without coding. Kind of laguange free!
-- Focus and start with the most important staff, or I will ends up with a messy markdown.
-- Don't start coding until you feel the design is complete. Or you will ends up struggling managing both code and design.
+# Afterwords
+This is inspired by literate programming and those onlin tutoial posts. This is still experimental.
