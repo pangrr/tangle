@@ -33,7 +33,7 @@ module.exports = () => {
 }
 ```
 
-**Check out another example**: [`src/tangle.ts`](https://github.com/pangrr/tangle/blob/master/src/tangle.ts) is generated from [`src/tangle.md`](https://github.com/pangrr/tangle/blob/master/src/tangle.md).
+**Check out another example**: [`src/tangle.ts`](src/tangle.ts) is generated from [`src/tangle.md`](src/tangle.md).
 
 
 
