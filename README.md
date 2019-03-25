@@ -30,9 +30,7 @@ tangle --help
 ```
 
 # Examples
-[More examples!](examples)
-
-[src/tangle.ts](src/tangle.ts) is generated from [src/tangle.md](src/tangle.md). But basically, `tangle` can turn the following markdown file
+[tangle.ts](src/tangle.ts) is generated from [tangle.md](src/tangle.md). But basically, `tangle` can turn the following markdown file
 
         My program will say hello world to you!
         ```js hello.js @mainLogic
@@ -52,6 +50,7 @@ module.exports = () => {
   console.log('hello world!');
 }
 ```
+[More examples!](examples)
 
 # Afterwords
 This is inspired by literate programming and those online tutoial posts. But the goal is to improve experiece reading and writing programs (at least some species). So I don't strictly follow any classic literate programming decipline.
