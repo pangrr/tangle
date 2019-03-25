@@ -12,7 +12,7 @@ tangle --help
 ```
 
 # Examples
-`tangle` can turn the following markdown file
+[src/tangle.ts](src/tangle.ts) is generated from [src/tangle.md](src/tangle.md). But basically, `tangle` can turn the following markdown file
 
         My program will say hello world to you!
         ```js hello.js @mainLogic
@@ -33,11 +33,12 @@ module.exports = () => {
 }
 ```
 
-**Check out another example**: [`src/tangle.ts`](src/tangle.ts) is generated from [`src/tangle.md`](src/tangle.md).
+[More examples!](examples)
+
+# Tips
 
 
-
-
+# Thoughts about literate programming
 # My Experiences in Literate Programming
 - Don't worry about which file to put which code at the beginning. Assign files after finishing all design.
 - I feel encouraged or natural to create functions at the beginning, in stead of writing procedural code then breaking them into functions.

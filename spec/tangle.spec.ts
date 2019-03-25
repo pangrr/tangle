@@ -14,14 +14,14 @@ describe('tangle', () => {
     fsx.removeSync(outputDir);
   });
 
-  it('should generate the right code for sample markdown files', () => {
-    fs.readdirSync(path.join('spec', 'sampleMarkdownFiles')).forEach(fileName => {
-      shx.exec(`node bin/tangle.js spec/sampleMarkdownFiles/${fileName} -d ${outputDir}`);
+  it('should generate a file with identical content as aHtml/demo.html', () => {
+    fs.readdirSync(path.join('examples', 'aHtml')).forEach(fileName => {
+      
     });
 
-    fs.readdirSync(path.join('spec', 'expectedCodeFiles')).forEach(fileName => {
-      expect(sameFileContent(path.join('spec', 'expectedCodeFiles', `${fileName}`), path.join(outputDir, `${fileName}`)), `${fileName}`).to.be.true;
-    })
+    shx.exec(`node bin/tangle.js examples/aHtml/demo.md -d ${outputDir}`);
+
+    expect(sameFileContent(path.join('examples', 'aHtml', 'demo.html'), path.join(outputDir, 'demo.html'))).to.be.true;
   });
 });
 
