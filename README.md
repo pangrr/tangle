@@ -30,7 +30,7 @@ tangle --help
 ```
 
 # Examples
-[tangle.ts](example/tangle/tangle.ts) is generated from [tangle.md](example/tangle/tangle.md). But basically, `tangle` can turn the following markdown file
+[tangle.ts](examples/tangle/tangle.ts) is generated from [tangle.md](examples/tangle/tangle.md). But basically, `tangle` can turn the following markdown file
 
         My program will say hello world to you!
         ```js hello.js @mainLogic
