@@ -1,9 +1,9 @@
 {
   "name": "@pangrr/tangle",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "description": "a literate programming cli to generate code from markdown files",
   "scripts": {
-    "build": "tangle tangle.md -d src && tsc --outDir bin",
+    "build": "tangle src/tangle.md -d src && tsc --outDir bin",
     "test": "npm run build && mocha -r ts-node/register spec/**/*.spec.ts"
   },
   "keywords": [
@@ -22,7 +22,6 @@
   "bin": {
     "tangle": "./bin/tangle.js"
   },
-  "main": "./bin/tangle.js",
   "author": "Ran Pang",
   "license": "ISC",
   "dependencies": {
