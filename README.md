@@ -1,6 +1,4 @@
-Do you enjoy those online tutorial posts?
-
-Do you want your program to also look like a tutorial?
+Do you enjoy those online tutorial posts? Do you want your program to also look like a tutorial?
 
 You can program in markdown with code inside and use `tangle` to extract code from markdown files.
 
