@@ -3,7 +3,7 @@
   "version": "0.3.1",
   "description": "a literate programming cli to generate code from markdown files",
   "scripts": {
-    "build": "tsc --outDir bin",
+    "build": "tangle tangle.md -d src && tsc --outDir bin",
     "test": "npm run build && mocha -r ts-node/register spec/**/*.spec.ts"
   },
   "keywords": [
