@@ -1,6 +1,6 @@
 {
   "name": "@pangrr/tangle",
-  "version": "0.3.2",
+  "version": "0.3.3",
   "description": "a literate programming cli to generate code from markdown files",
   "scripts": {
     "build": "tangle src/tangle.md -d src && tsc --outDir bin",

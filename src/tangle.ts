@@ -98,8 +98,15 @@ function shouldNotStartWithBlockCode(text: string): void {
 function appendNewLineToBlockCodeEnd(text: string): string {
   return text.replace(/\n[ \t]*```[ \t]*\n/g, '\n```\n\n');
 }
+function appendNewLine(text: string): string {
+  return text + '\n';
+}
 function preprocessMdString(text: string): string {
-  return appendNewLineToBlockCodeEnd(unifyNewLineChar(text));
+  return appendNewLine(
+    appendNewLineToBlockCodeEnd(
+      unifyNewLineChar(text)
+    )
+  );
 }
 function validateMdString(text: string): void {
   shouldNotStartWithBlockCode(text);

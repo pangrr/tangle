@@ -93,8 +93,11 @@ function shouldNotStartWithBlockCode(text) {
 function appendNewLineToBlockCodeEnd(text) {
     return text.replace(/\n[ \t]*```[ \t]*\n/g, '\n```\n\n');
 }
+function appendNewLine(text) {
+    return text + '\n';
+}
 function preprocessMdString(text) {
-    return appendNewLineToBlockCodeEnd(unifyNewLineChar(text));
+    return appendNewLine(appendNewLineToBlockCodeEnd(unifyNewLineChar(text)));
 }
 function validateMdString(text) {
     shouldNotStartWithBlockCode(text);

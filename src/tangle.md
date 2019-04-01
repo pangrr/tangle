@@ -160,19 +160,27 @@ function appendNewLineToBlockCodeEnd(text: string): string {
   return text.replace(/\n[ \t]*```[ \t]*\n/g, '\n```\n\n');
 }
 ```
-
-## Process md content before extracting code.
+- **Code blocks end with last line is ignored.** Add a new line at the end of markdown.
 ```ts tangle.ts @functions
-function preprocessMdString(text: string): string {
-  return appendNewLineToBlockCodeEnd(unifyNewLineChar(text));
+function appendNewLine(text: string): string {
+  return text + '\n';
 }
 ```
-## Validate md content before extracting code.
+
+Let group above functions into preprocess and validation.
 ```ts tangle.ts @functions
+function preprocessMdString(text: string): string {
+  return appendNewLine(
+    appendNewLineToBlockCodeEnd(
+      unifyNewLineChar(text)
+    )
+  );
+}
 function validateMdString(text: string): void {
   shouldNotStartWithBlockCode(text);
 }
 ```
+
 ## Main
 ```ts tangle.ts @functions
 function md2Code(mdFilePath: string, saveDir: string): void {
