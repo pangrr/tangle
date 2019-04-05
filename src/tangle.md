@@ -1,7 +1,12 @@
 Basically we extract code from markdown and organize the code into files.
 
 - [Define & Extract Code](#define--extract-code)
+  * [Define Code](#define-code)
+  * [Store Code](#store-code)
 - [Organize Code Into Files](#organize-code-into-files)
+  * [Merge Code Of Same File And Insert Point](#merge-code-of-same-file-and-insert-point)
+  * [Check Missing Base Code From Files](#check-missing-base-code-from-files)
+  * [Insert Code](#insert-code)
 - [Appendix](#appendix)
   * [Read a markdown file into a string.](#read-a-markdown-file-into-a-string)
   * [Dump code into files.](#dump-code-into-files)
@@ -12,6 +17,7 @@ Basically we extract code from markdown and organize the code into files.
   * [Put everything together.](#put-everything-together)
 
 # Define & Extract Code
+## Define Code
 Use block code and not use inline code because custom information can be easily attached to block code mark but not to inline code.
 
 Code location can be appended to the start line of a block code like ` ``` <filePath> <insertPoint>`. Note that `<insertPoint>` can be optional because some kind of code, like functions, can be put almost any where in a file. Why bother assign a location? 
@@ -29,7 +35,7 @@ function extractInsertCode(text: string): string[] {
   return text.match(/\n[ \t]*```\S*[ \t]+\S+[ \t]+\S+[ \t]*\n[\s\S]*?\n[ \t]*```[ \t]*\n/g) || [];
 }
 ```
-
+## Store Code
 Then convert extracted strings into json objects. First the interface:
 ```ts tangle.ts @functions
 interface Code {
@@ -61,7 +67,8 @@ function parseBlockCodeString(blockCodeString: string): Code {
 ```
 
 # Organize Code Into Files
-1. As each extracted string is converted into `Code` object one by one, concat code of identical `filePath` and `insertPoint`.
+## Merge Code Of Same File And Insert Point
+As each extracted string is converted into `Code` object one by one, concat code of identical `filePath` and `insertPoint`.
 ```ts tangle.ts @functions
 function addOneCode(newCode: Code, existingCode: Code): void {
   Object.keys(newCode).forEach(filePath => {
@@ -83,7 +90,8 @@ function addOneCode(newCode: Code, existingCode: Code): void {
 }
 ```
 
-2. It's possible that for some insert code there is no base code of the same file. In this case we can try to find the base code among existing code files.
+## Check Missing Base Code From Files
+It's possible that for some insert code there is no base code of the same file. In this case we can try to find the base code among existing code files.
 ```ts tangle.ts @functions
 function addMissingBaseCode(allCode: Code): void {
   Object.keys(allCode).forEach(filePath => {
@@ -97,7 +105,8 @@ function addMissingBaseCode(allCode: Code): void {
 }
 ```
 
-3. Put insert code into base code of the same `filePath`. **Note** the case where an insert code may need to be put into another insert code. To make sure as many as possible insert code get inserted, keep inserting until no more code can be inserted.
+## Insert Code
+Put insert code into base code of the same `filePath`. **Note** the case where an insert code may need to be put into another insert code. To make sure as many as possible insert code get inserted, keep inserting until no more code can be inserted.
 ```ts tangle.ts @functions
 function insertCode(allCode: Code): void {
   Object.keys(allCode).forEach(filePath => {
