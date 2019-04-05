@@ -7,8 +7,6 @@ Basically we extract code from markdown and organize the code into files.
   * [Dump code into files.](#dump-code-into-files)
   * [Cli](#cli)
   * [Regex limitations and work around](#regex-limitations-and-work-around)
-  * [Process md content before extracting code.](#process-md-content-before-extracting-code)
-  * [Validate md content before extracting code.](#validate-md-content-before-extracting-code)
   * [Main](#main)
   * [Imports](#imports)
   * [Put everything together.](#put-everything-together)
@@ -32,7 +30,7 @@ function extractInsertCode(text: string): string[] {
 }
 ```
 
-Then put extracted strings into an object.
+Then convert extracted strings into json objects. First the interface:
 ```ts tangle.ts @functions
 interface Code {
   [filePath: string]: {
@@ -42,6 +40,8 @@ interface Code {
     };
   };
 }
+```
+```ts tangle.ts @functions
 function parseBlockCodeString(blockCodeString: string): Code {
   const lines = blockCodeString.split('\n');
   const firstLineTokens = lines[1].replace(/[ \t]+/g, ' ').split(' ');
@@ -61,7 +61,7 @@ function parseBlockCodeString(blockCodeString: string): Code {
 ```
 
 # Organize Code Into Files
-1. As each extracted string is put into the `Code` object one by one, concat code of identical `filePath` and `insertPoint`.
+1. As each extracted string is converted into `Code` object one by one, concat code of identical `filePath` and `insertPoint`.
 ```ts tangle.ts @functions
 function addOneCode(newCode: Code, existingCode: Code): void {
   Object.keys(newCode).forEach(filePath => {
@@ -83,7 +83,21 @@ function addOneCode(newCode: Code, existingCode: Code): void {
 }
 ```
 
-2. Put insert code into base code of the same `filePath`. Because there may be a case that one insert code should be put into another insert code, do insert code into base code until no code is inserted.
+2. It's possible that for some insert code there is no base code of the same file. In this case we can try to find the base code among existing code files.
+```ts tangle.ts @functions
+function addMissingBaseCode(allCode: Code): void {
+  Object.keys(allCode).forEach(filePath => {
+    const sameFileCode = allCode[filePath];
+    if (!sameFileCode.baseCode) {
+      try {
+        sameFileCode.baseCode = fs.readFileSync(filePath, 'utf8');
+      } catch (e) {}
+    }
+  });
+}
+```
+
+3. Put insert code into base code of the same `filePath`. **Note** the case where an insert code may need to be put into another insert code. To make sure as many as possible insert code get inserted, keep inserting until no more code can be inserted.
 ```ts tangle.ts @functions
 function insertCode(allCode: Code): void {
   Object.keys(allCode).forEach(filePath => {
@@ -191,6 +205,7 @@ function md2Code(mdFilePath: string, saveDir: string): void {
     addOneCode(parseBlockCodeString(codeString), code);
     return code;
   }, {});
+  addMissingBaseCode(code);
   insertCode(code);
   dumpCode(code, saveDir);
 }

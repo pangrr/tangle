@@ -54,6 +54,17 @@ function addOneCode(newCode, existingCode) {
         }
     });
 }
+function addMissingBaseCode(allCode) {
+    Object.keys(allCode).forEach(filePath => {
+        const sameFileCode = allCode[filePath];
+        if (!sameFileCode.baseCode) {
+            try {
+                sameFileCode.baseCode = fs.readFileSync(filePath, 'utf8');
+            }
+            catch (e) { }
+        }
+    });
+}
 function insertCode(allCode) {
     Object.keys(allCode).forEach(filePath => {
         const sameFileCode = allCode[filePath];
@@ -110,6 +121,7 @@ function md2Code(mdFilePath, saveDir) {
         addOneCode(parseBlockCodeString(codeString), code);
         return code;
     }, {});
+    addMissingBaseCode(code);
     insertCode(code);
     dumpCode(code, saveDir);
 }
