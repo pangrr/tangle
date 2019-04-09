@@ -20,23 +20,25 @@ Basically we extract code from markdown and organize the code into files.
 ## Define Code
 Use block code and not use inline code because custom information can be easily attached to block code mark but not to inline code.
 
-Code location can be appended to the start line of a block code like ` ``` <filePath> <insertPoint>`. Note that `<insertPoint>` can be optional because some kind of code, like functions, can be put almost any where in a file. Why bother assign a location? 
+Code location can be appended to the start line of a block code like ` ``` <filePaths> <insertPoint>`.
+- Note that multiple file paths is supported here because there may be a case that the same piece of code needs to appear in several files. In this case, file paths are separated by comma `,` (e.g. `foo.js,bar.js,far.js`).
+- Note also that `<insertPoint>` can be optional because some kind of code, like functions, can be put almost any where in a file. Why bother assign a location? 
 
 Thus comes 2 types of code:
-1. base code, starting with ` ``` <filePath>`, extracted by 
+1. base code, starting with ` ``` <filePaths>`, extracted by 
 ```ts tangle.ts @functions
 function extractBaseCode(text: string): string[] {
   return text.match(/\n[ \t]*```\S*[ \t]+\S+[ \t]*\n[\s\S]*?\n[ \t]*```[ \t]*\n/g) || [];
 }
 ```
-2. insert code, starting with ` ``` <filePath> <insertPoint>`, extracted by 
+2. insert code, starting with ` ``` <filePaths> <insertPoint>`, extracted by 
 ```ts tangle.ts @functions
 function extractInsertCode(text: string): string[] {
   return text.match(/\n[ \t]*```\S*[ \t]+\S+[ \t]+\S+[ \t]*\n[\s\S]*?\n[ \t]*```[ \t]*\n/g) || [];
 }
 ```
 ## Store Code
-Then convert extracted strings into json objects. First the interface:
+Then convert extracted strings into json objects. First the interface to store code as:
 ```ts tangle.ts @functions
 interface Code {
   [filePath: string]: {
@@ -47,21 +49,27 @@ interface Code {
   };
 }
 ```
+now we can parse a code string to an instance of the interface above:
 ```ts tangle.ts @functions
 function parseBlockCodeString(blockCodeString: string): Code {
   const lines = blockCodeString.split('\n');
   const firstLineTokens = lines[1].replace(/[ \t]+/g, ' ').split(' ');
   const code = lines.filter((line, i) => i > 1 && i < lines.length - 2).join('\n') + '\n';
-  const filePath = firstLineTokens[1];
+  const filePaths = firstLineTokens[1].split(',');
   const insertPoint = firstLineTokens[2];
-  const codeObj: Code = {
-    [filePath]: {
+
+  const codeObj: Code = {};
+
+  filePaths.forEach(filePath => {
+    codeObj[filePath] = {
       baseCode: '',
       insertCode: {}
-    }
-  };
-  if (insertPoint) codeObj[filePath].insertCode[insertPoint] = code;
-  else codeObj[filePath].baseCode = code;
+    };
+    if (insertPoint) codeObj[filePath].insertCode[insertPoint] = code;
+    else codeObj[filePath].baseCode = code;
+    return codeObj;
+  });
+
   return codeObj;
 }
 ```

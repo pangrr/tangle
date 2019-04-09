@@ -30,16 +30,21 @@ function parseBlockCodeString(blockCodeString: string): Code {
   const lines = blockCodeString.split('\n');
   const firstLineTokens = lines[1].replace(/[ \t]+/g, ' ').split(' ');
   const code = lines.filter((line, i) => i > 1 && i < lines.length - 2).join('\n') + '\n';
-  const filePath = firstLineTokens[1];
+  const filePaths = firstLineTokens[1].split(',');
   const insertPoint = firstLineTokens[2];
-  const codeObj: Code = {
-    [filePath]: {
+
+  const codeObj: Code = {};
+
+  filePaths.forEach(filePath => {
+    codeObj[filePath] = {
       baseCode: '',
       insertCode: {}
-    }
-  };
-  if (insertPoint) codeObj[filePath].insertCode[insertPoint] = code;
-  else codeObj[filePath].baseCode = code;
+    };
+    if (insertPoint) codeObj[filePath].insertCode[insertPoint] = code;
+    else codeObj[filePath].baseCode = code;
+    return codeObj;
+  });
+
   return codeObj;
 }
 function addOneCode(newCode: Code, existingCode: Code): void {
