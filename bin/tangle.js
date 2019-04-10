@@ -7,10 +7,15 @@ const path = require("path");
 const yargs = require("yargs");
 const argv = yargs
     .demandCommand(1)
-    .usage('Usage: $0 [markdown_file_path] -d [save_dir]')
+    .usage('Usage: $0 [markdown_file_path] -d [save_dir] -w')
     .default('d', '.')
     .argv;
-md2Code(argv._[0], argv.d);
+const mdFilePath = argv._[0];
+const codeDir = argv.d;
+md2Code(mdFilePath, codeDir);
+if (argv.w) {
+    fs.watchFile(mdFilePath, () => md2Code(mdFilePath, codeDir));
+}
 function extractBaseCode(text) {
     return text.match(/\n[ \t]*```\S*[ \t]+\S+[ \t]*\n[\s\S]*?\n[ \t]*```[ \t]*\n/g) || [];
 }

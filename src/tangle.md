@@ -5,12 +5,12 @@ Basically we extract code from markdown and organize the code into files.
   * [Store Code](#store-code)
 - [Organize Code Into Files](#organize-code-into-files)
   * [Merge Code Of Same File And Insert Point](#merge-code-of-same-file-and-insert-point)
-  * [Check Missing Base Code From Files](#check-missing-base-code-from-files)
   * [Insert Code](#insert-code)
 - [Appendix](#appendix)
   * [Read a markdown file into a string.](#read-a-markdown-file-into-a-string)
   * [Dump code into files.](#dump-code-into-files)
   * [Cli](#cli)
+    + [Watch Markdown File Change](#watch-markdown-file-change)
   * [Regex limitations and work around](#regex-limitations-and-work-around)
   * [Main](#main)
   * [Imports](#imports)
@@ -127,8 +127,6 @@ Now the `baseCode` in the `Code` object is organized by `filePath` and ready to 
 
 
 
-
-
 # Appendix
 ## Read a markdown file into a string.
 ```ts tangle.ts @functions
@@ -150,12 +148,23 @@ function dumpCode(code: Code, saveDir: string): void {
 ```ts tangle.ts @cli
 const argv = yargs
   .demandCommand(1)
-  .usage('Usage: $0 [markdown_file_path] -d [save_dir]')
+  .usage('Usage: $0 [markdown_file_path] -d [save_dir] -w')
   .default('d', '.')
   .argv;
 
-md2Code(argv._[0], <string>argv.d);
+const mdFilePath = argv._[0];
+const codeDir = <string>argv.d;
+md2Code(mdFilePath, codeDir);
 ```
+### Watch Markdown File Change
+Sometimes it's helpful automatically generate code files on markdown file change.
+```ts tangle.ts @cli
+if (argv.w) {
+  fs.watchFile(mdFilePath, () => md2Code(mdFilePath, codeDir));
+}
+```
+
+
 ## Regex limitations and work around
 - **`\r\n` breaks the match.** Replace `\r\n` with `\n`.
 ```ts tangle.ts @functions
