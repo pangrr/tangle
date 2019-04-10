@@ -98,21 +98,6 @@ function addOneCode(newCode: Code, existingCode: Code): void {
 }
 ```
 
-## Check Missing Base Code From Files
-It's possible that for some insert code there is no base code of the same file. In this case we can try to find the base code among existing code files.
-```ts tangle.ts @functions
-function addMissingBaseCode(allCode: Code): void {
-  Object.keys(allCode).forEach(filePath => {
-    const sameFileCode = allCode[filePath];
-    if (!sameFileCode.baseCode) {
-      try {
-        sameFileCode.baseCode = fs.readFileSync(filePath, 'utf8');
-      } catch (e) {}
-    }
-  });
-}
-```
-
 ## Insert Code
 Put insert code into base code of the same `filePath`. **Note** the case where an insert code may need to be put into another insert code. To make sure as many as possible insert code get inserted, keep inserting until no more code can be inserted.
 ```ts tangle.ts @functions
@@ -222,7 +207,6 @@ function md2Code(mdFilePath: string, saveDir: string): void {
     addOneCode(parseBlockCodeString(codeString), code);
     return code;
   }, {});
-  addMissingBaseCode(code);
   insertCode(code);
   dumpCode(code, saveDir);
 }

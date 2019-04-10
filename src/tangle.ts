@@ -65,16 +65,6 @@ function addOneCode(newCode: Code, existingCode: Code): void {
     }
   });
 }
-function addMissingBaseCode(allCode: Code): void {
-  Object.keys(allCode).forEach(filePath => {
-    const sameFileCode = allCode[filePath];
-    if (!sameFileCode.baseCode) {
-      try {
-        sameFileCode.baseCode = fs.readFileSync(filePath, 'utf8');
-      } catch (e) {}
-    }
-  });
-}
 function insertCode(allCode: Code): void {
   Object.keys(allCode).forEach(filePath => {
     const sameFileCode = allCode[filePath];
@@ -134,7 +124,6 @@ function md2Code(mdFilePath: string, saveDir: string): void {
     addOneCode(parseBlockCodeString(codeString), code);
     return code;
   }, {});
-  addMissingBaseCode(code);
   insertCode(code);
   dumpCode(code, saveDir);
 }
