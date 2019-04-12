@@ -21,7 +21,7 @@ Install NodeJS then `npm install -g @pangrr/tangle`.
 
 Useage:
 ```
-tangle <markdown_file_path> -d <save_code_directory>
+tangle <markdown_file_path> -d <save_code_directory> -w
 ```
 ```
 tangle --help
