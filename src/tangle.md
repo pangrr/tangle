@@ -150,7 +150,7 @@ const argv = yargs
   .demandCommand(1)
   .usage('Usage: $0 [markdown_file_path] -d [save_dir] -w')
   .describe('d', 'Save code file to directory').default('d', '.')
-  .describe('w', 'Generate code files on markdown file change').default('w', false)
+  .describe('w', 'Generate code files on markdown file change')
   .argv;
 
 const mdFilePath = argv._[0];
